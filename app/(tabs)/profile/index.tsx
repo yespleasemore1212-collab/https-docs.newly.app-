@@ -69,7 +69,7 @@ function CommunityRow({ community }: { community: Community }) {
 }
 
 export default function ProfileScreen() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading, signOut, deleteAccount } = useAuth();
   const router = useRouter();
   const [joinedCommunities] = useState<Community[]>(MOCK_COMMUNITIES.slice(0, 2));
   const [myCommunities] = useState<Community[]>([]);
@@ -91,7 +91,12 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             console.log('[Profile] Delete account confirmed');
-            await signOut();
+            try {
+              await deleteAccount();
+            } catch (err: any) {
+              console.error('[Profile] Delete account error:', err.message);
+              Alert.alert('Error', 'Failed to delete account. Please try again or contact support.');
+            }
           },
         },
       ]

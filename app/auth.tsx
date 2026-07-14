@@ -58,6 +58,7 @@ export default function AuthScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
@@ -70,7 +71,7 @@ export default function AuthScreen() {
       console.log('[Auth] User authenticated, navigating to tabs');
       router.replace('/(tabs)/(home)');
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};

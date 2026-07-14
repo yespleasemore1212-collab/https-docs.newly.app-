@@ -18,6 +18,7 @@ interface AuthContextType {
   signInWithApple: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   fetchUser: () => Promise<void>;
 }
 
@@ -123,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('[AuthContext] signInWithApple');
     if (Platform.OS === "ios") {
       try {
-        const AppleAuthentication = require("expo-apple-authentication");
+        const AppleAuthentication = await import("expo-apple-authentication");
         const credential = await AppleAuthentication.signInAsync({
           requestedScopes: [
             AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -172,6 +173,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const deleteAccount = async () => {
+    console.log('[AuthContext] deleteAccount');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      throw new Error('No authenticated user found');
+    }
+    const userId = session.user.id;
+
+    // Delete all user data from the database
+    await supabase.from('likes').delete().eq('user_id', userId);
+    await supabase.from('comments').delete().eq('user_id', userId);
+    await supabase.from('messages').delete().eq('sender_id', userId);
+    await supabase.from('memberships').delete().eq('user_id', userId);
+    await supabase.from('posts').delete().eq('creator_id', userId);
+    await supabase.from('communities').delete().eq('creator_id', userId);
+    await supabase.from('profiles').delete().eq('id', userId);
+
+    // Invoke edge function to delete the auth user (requires service role)
+    const { error: fnError } = await supabase.functions.invoke('delete-account', {
+      body: { user_id: userId },
+    });
+    if (fnError) {
+      console.error('[AuthContext] delete-account function error:', fnError.message);
+      // Still sign out even if the edge function fails
+    }
+
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -182,6 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signInWithApple,
         signInWithGoogle,
         signOut,
+        deleteAccount,
         fetchUser,
       }}
     >

@@ -28,6 +28,7 @@ function FeaturedCard({ community, index }: { community: Community; index: numbe
   const opacity = useRef(new Animated.Value(0)).current;
   const translateX = useRef(new Animated.Value(20)).current;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     Animated.parallel([
       Animated.timing(opacity, { toValue: 1, duration: 400, delay: index * 100, useNativeDriver: true }),
@@ -199,6 +200,7 @@ export default function ExploreScreen() {
 
 function SkeletonCard() {
   const opacity = useRef(new Animated.Value(0.3)).current;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     Animated.loop(
       Animated.sequence([

@@ -35,11 +35,10 @@ export function PostCard({ post, index = 0, showCommunity = false, communityName
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(16)).current;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 350, delay: index * 60, useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: 0, duration: 350, delay: index * 60, useNativeDriver: true }),
-    ]).start();
+    Animated.timing(opacity, { toValue: 1, duration: 350, delay: index * 60, useNativeDriver: true }).start();
+    Animated.timing(translateY, { toValue: 0, duration: 350, delay: index * 60, useNativeDriver: true }).start();
   }, []);
 
   const typeConfig = POST_TYPE_CONFIG[post.type];
