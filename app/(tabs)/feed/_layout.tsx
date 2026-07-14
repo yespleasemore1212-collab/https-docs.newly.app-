@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { COLORS } from '@/constants/Colors';
 
-export default function HomeLayout() {
+export default function FeedLayout() {
   return (
     <Stack
       screenOptions={{
@@ -14,14 +14,9 @@ export default function HomeLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: 'Explore',
+          title: 'My Feed',
           headerLargeTitle: true,
           headerLargeTitleStyle: { color: COLORS.text },
-          headerSearchBarOptions: {
-            placeholder: 'Search communities...',
-            tintColor: COLORS.primary,
-            textColor: COLORS.text,
-          },
         }}
       />
     </Stack>

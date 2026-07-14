@@ -17,18 +17,17 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { WidgetProvider } from "@/contexts/WidgetContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-// Note: Error logging is auto-initialized via index.ts import
+import { AuthProvider } from "@/contexts/AuthContext";
+import { COLORS } from "@/constants/Colors";
 
-// Only wrap with ErrorBoundary in dev — production apps should not include it
 const DevErrorBoundary = __DEV__
   ? ErrorBoundary
   : ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
-  initialRouteName: "(tabs)", // Ensure any route can link back to `/`
+  initialRouteName: "(tabs)",
 };
 
 export default function RootLayout() {
@@ -50,54 +49,117 @@ export default function RootLayout() {
       networkState.isInternetReachable === false
     ) {
       Alert.alert(
-        "🔌 You are offline",
+        "You are offline",
         "You can keep using the app! Your changes will be saved locally and synced when you are back online."
       );
     }
   }, [networkState.isConnected, networkState.isInternetReachable]);
 
-  const CustomDefaultTheme: Theme = {
-    ...DefaultTheme,
-    dark: false,
+  const EliteConnectDarkTheme: Theme = {
+    ...DarkTheme,
     colors: {
-      primary: "rgb(0, 122, 255)", // System Blue
-      background: "rgb(242, 242, 247)", // Light mode background
-      card: "rgb(255, 255, 255)", // White cards/surfaces
-      text: "rgb(0, 0, 0)", // Black text for light mode
-      border: "rgb(216, 216, 220)", // Light gray for separators/borders
-      notification: "rgb(255, 59, 48)", // System Red
+      primary: COLORS.primary,
+      background: COLORS.background,
+      card: COLORS.surface,
+      text: COLORS.text,
+      border: COLORS.border,
+      notification: COLORS.danger,
     },
   };
 
-  const CustomDarkTheme: Theme = {
-    ...DarkTheme,
+  const EliteConnectLightTheme: Theme = {
+    ...DefaultTheme,
     colors: {
-      primary: "rgb(10, 132, 255)", // System Blue (Dark Mode)
-      background: "rgb(1, 1, 1)", // True black background for OLED displays
-      card: "rgb(28, 28, 30)", // Dark card/surface color
-      text: "rgb(255, 255, 255)", // White text for dark mode
-      border: "rgb(44, 44, 46)", // Dark gray for separators/borders
-      notification: "rgb(255, 69, 58)", // System Red (Dark Mode)
+      primary: COLORS.primary,
+      background: COLORS.background,
+      card: COLORS.surface,
+      text: COLORS.text,
+      border: COLORS.border,
+      notification: COLORS.danger,
     },
   };
+
   return (
     <DevErrorBoundary>
-      <StatusBar style="auto" animated />
-        <ThemeProvider
-          value={colorScheme === "dark" ? CustomDarkTheme : CustomDefaultTheme}
-        >
-          <SafeAreaProvider>
+      <StatusBar style="light" animated />
+      <ThemeProvider value={EliteConnectDarkTheme}>
+        <SafeAreaProvider>
+          <AuthProvider>
             <WidgetProvider>
-              <GestureHandlerRootView>
-              <Stack>
-                {/* Main app with tabs */}
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              </Stack>
-              <SystemBars style={"auto"} />
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <Stack
+                  screenOptions={{
+                    headerStyle: { backgroundColor: COLORS.background },
+                    headerTintColor: COLORS.text,
+                    headerShadowVisible: false,
+                    contentStyle: { backgroundColor: COLORS.background },
+                  }}
+                >
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen name="auth" options={{ headerShown: false, presentation: 'modal' }} />
+                  <Stack.Screen name="auth-popup" options={{ headerShown: false }} />
+                  <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="community/[id]"
+                    options={{
+                      headerShown: true,
+                      headerTransparent: true,
+                      headerTintColor: '#fff',
+                      headerBackButtonDisplayMode: 'minimal',
+                    }}
+                  />
+                  <Stack.Screen
+                    name="post/[id]"
+                    options={{
+                      headerShown: true,
+                      headerStyle: { backgroundColor: COLORS.background },
+                      headerTintColor: COLORS.text,
+                      headerBackButtonDisplayMode: 'minimal',
+                    }}
+                  />
+                  <Stack.Screen
+                    name="create-community"
+                    options={{
+                      presentation: 'modal',
+                      headerShown: true,
+                      headerStyle: { backgroundColor: COLORS.background },
+                      headerTintColor: COLORS.text,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="create-post/[communityId]"
+                    options={{
+                      presentation: 'modal',
+                      headerShown: true,
+                      headerStyle: { backgroundColor: COLORS.background },
+                      headerTintColor: COLORS.text,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="chat/[userId]"
+                    options={{
+                      headerShown: true,
+                      headerStyle: { backgroundColor: COLORS.background },
+                      headerTintColor: COLORS.text,
+                      headerBackButtonDisplayMode: 'minimal',
+                    }}
+                  />
+                  <Stack.Screen
+                    name="creator/[userId]"
+                    options={{
+                      headerShown: true,
+                      headerTransparent: true,
+                      headerTintColor: '#fff',
+                      headerBackButtonDisplayMode: 'minimal',
+                    }}
+                  />
+                </Stack>
+                <SystemBars style="light" />
               </GestureHandlerRootView>
             </WidgetProvider>
-          </SafeAreaProvider>
-        </ThemeProvider>
+          </AuthProvider>
+        </SafeAreaProvider>
+      </ThemeProvider>
     </DevErrorBoundary>
   );
 }
