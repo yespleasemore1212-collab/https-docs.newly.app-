@@ -42,7 +42,9 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {}
+      "router": {},
+      "EXPO_PUBLIC_SUPABASE_URL": "https://ivvwdsmwcdqycrbzidvo.supabase.co",
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2dndkc213Y2RxeWNyYnppZHZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwNTU4NzYsImV4cCI6MjA5OTYzMTg3Nn0.jDFB6u2gYkzvOiYeAjq5n7Sgp4heh9j2-BlGPpx0ID4"
     }
   }
 }
