@@ -1,18 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
   ImageSourcePropType,
+  Alert,
+  Linking,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { User, Settings, LogOut, Plus, Users, Heart, Zap } from 'lucide-react-native';
+import { User, Settings, LogOut, Plus, Users, Heart, Zap, Trash2, FileText, Shield } from 'lucide-react-native';
 import { COLORS } from '@/constants/Colors';
 import { Community } from '@/types';
 import { MOCK_COMMUNITIES, MOCK_PROFILE, formatCount } from '@/utils/mockData';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { useAuth } from '@/contexts/AuthContext';
+
+const PRIVACY_POLICY_URL = 'https://eliteconnect.app/privacy';
+const TERMS_URL = 'https://eliteconnect.app/terms';
 
 function resolveImageSource(source: string | number | ImageSourcePropType | undefined): ImageSourcePropType {
   if (!source) return { uri: '' };
@@ -73,6 +78,24 @@ export default function ProfileScreen() {
   const handleSignOut = async () => {
     console.log('[Profile] Sign out button pressed');
     await signOut();
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to permanently delete your account? All your data, communities, and memberships will be removed. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: async () => {
+            console.log('[Profile] Delete account confirmed');
+            await signOut();
+          },
+        },
+      ]
+    );
   };
 
   if (authLoading) {
@@ -376,8 +399,34 @@ export default function ProfileScreen() {
           borderWidth: 1,
           borderColor: COLORS.border,
           overflow: 'hidden',
-          marginBottom: 24,
+          marginBottom: 12,
         }}>
+          <AnimatedPressable onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: COLORS.divider,
+            }}>
+              <Shield size={20} color={COLORS.textSecondary} />
+              <Text style={{ color: COLORS.text, fontSize: 15, fontWeight: '500', flex: 1 }}>Privacy Policy</Text>
+            </View>
+          </AnimatedPressable>
+          <AnimatedPressable onPress={() => Linking.openURL(TERMS_URL)}>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: COLORS.divider,
+            }}>
+              <FileText size={20} color={COLORS.textSecondary} />
+              <Text style={{ color: COLORS.text, fontSize: 15, fontWeight: '500', flex: 1 }}>Terms of Service</Text>
+            </View>
+          </AnimatedPressable>
           <AnimatedPressable onPress={() => {
             console.log('[Profile] Sign out pressed');
             handleSignOut();
@@ -390,6 +439,31 @@ export default function ProfileScreen() {
             }}>
               <LogOut size={20} color={COLORS.danger} />
               <Text style={{ color: COLORS.danger, fontSize: 15, fontWeight: '500' }}>Sign out</Text>
+            </View>
+          </AnimatedPressable>
+        </View>
+
+        {/* Delete account */}
+        <View style={{
+          backgroundColor: COLORS.surface,
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: COLORS.border,
+          overflow: 'hidden',
+          marginBottom: 24,
+        }}>
+          <AnimatedPressable onPress={handleDeleteAccount}>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              padding: 16,
+            }}>
+              <Trash2 size={20} color={COLORS.danger} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: COLORS.danger, fontSize: 15, fontWeight: '500' }}>Delete Account</Text>
+                <Text style={{ color: COLORS.textTertiary, fontSize: 12, marginTop: 2 }}>Permanently remove your account and data</Text>
+              </View>
             </View>
           </AnimatedPressable>
         </View>
