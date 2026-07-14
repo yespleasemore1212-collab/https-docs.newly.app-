@@ -1,45 +1,68 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { Platform } from "react-native";
+import { useRouter } from "expo-router";
+import { supabase } from "@/lib/supabase";
 
 type Status = "processing" | "success" | "error";
 
 export default function AuthCallbackScreen() {
   const [status, setStatus] = useState<Status>("processing");
   const [message, setMessage] = useState("Processing authentication...");
+  const router = useRouter();
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
     handleCallback();
   }, []);
 
-  const handleCallback = () => {
+  const handleCallback = async () => {
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get("better_auth_token");
-      const error = urlParams.get("error");
+      console.log('[AuthCallback] Processing OAuth callback');
+      const error = new URLSearchParams(window.location.search).get("error");
 
       if (error) {
+        console.error('[AuthCallback] OAuth error:', error);
         setStatus("error");
         setMessage(`Authentication failed: ${error}`);
         window.opener?.postMessage({ type: "oauth-error", error }, window.location.origin);
         return;
       }
 
-      if (token) {
+      // Supabase handles the session from the URL hash automatically via onAuthStateChange.
+      // Wait briefly for the session to be established.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        console.log('[AuthCallback] Session established, user:', session.user.id);
         setStatus("success");
-        setMessage("Authentication successful! Closing...");
-        window.opener?.postMessage({ type: "oauth-success", token }, window.location.origin);
-        setTimeout(() => window.close(), 1000);
+        setMessage("Authentication successful! Redirecting...");
+        if (window.opener) {
+          window.opener.postMessage({ type: "oauth-success" }, window.location.origin);
+          setTimeout(() => window.close(), 500);
+        } else {
+          router.replace("/(tabs)/(home)");
+        }
       } else {
-        setStatus("error");
-        setMessage("No authentication token received");
-        window.opener?.postMessage({ type: "oauth-error", error: "No token" }, window.location.origin);
+        // Session may arrive via onAuthStateChange shortly
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+          if (newSession) {
+            console.log('[AuthCallback] Session arrived via state change, user:', newSession.user.id);
+            subscription.unsubscribe();
+            setStatus("success");
+            setMessage("Authentication successful! Redirecting...");
+            if (window.opener) {
+              window.opener.postMessage({ type: "oauth-success" }, window.location.origin);
+              setTimeout(() => window.close(), 500);
+            } else {
+              router.replace("/(tabs)/(home)");
+            }
+          }
+        });
       }
     } catch (err) {
+      console.error('[AuthCallback] Error:', err);
       setStatus("error");
       setMessage("Failed to process authentication");
-      console.error("Auth callback error:", err);
     }
   };
 
