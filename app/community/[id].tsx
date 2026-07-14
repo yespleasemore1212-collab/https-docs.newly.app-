@@ -16,6 +16,7 @@ import { MOCK_COMMUNITIES, MOCK_POSTS, formatCount } from '@/utils/mockData';
 import { PostCard } from '@/components/PostCard';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 function resolveImageSource(source: string | number | ImageSourcePropType | undefined): ImageSourcePropType {
   if (!source) return { uri: '' };
@@ -27,6 +28,7 @@ export default function CommunityDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { isSubscribed } = useSubscription();
   const [community, setCommunity] = useState<Community | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [isMember, setIsMember] = useState(false);
@@ -64,7 +66,13 @@ export default function CommunityDetailScreen() {
   const handleJoinMonthly = async () => {
     console.log('[Community] Join monthly button pressed for community:', id);
     if (!user) {
+      console.log('[Community] Not authenticated — redirecting to auth');
       router.push('/auth');
+      return;
+    }
+    if (!isSubscribed) {
+      console.log('[Community] Not subscribed — redirecting to paywall for paid community join');
+      router.push('/paywall');
       return;
     }
     setJoiningMonthly(true);
@@ -77,7 +85,13 @@ export default function CommunityDetailScreen() {
   const handleJoinOneTime = async () => {
     console.log('[Community] Join one-time button pressed for community:', id);
     if (!user) {
+      console.log('[Community] Not authenticated — redirecting to auth');
       router.push('/auth');
+      return;
+    }
+    if (!isSubscribed) {
+      console.log('[Community] Not subscribed — redirecting to paywall for paid community join');
+      router.push('/paywall');
       return;
     }
     setJoiningOneTime(true);
@@ -240,17 +254,20 @@ export default function CommunityDetailScreen() {
                   borderRadius: 14,
                   padding: 16,
                   borderWidth: 1,
-                  borderColor: COLORS.primaryBorder,
+                  borderColor: isSubscribed ? COLORS.primaryBorder : '#7C3AED60',
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                 }}>
                   <View>
-                    <Text style={{ color: COLORS.text, fontSize: 16, fontWeight: '700', marginBottom: 2 }}>
-                      Monthly
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      {!isSubscribed && <Lock size={14} color={COLORS.primary} />}
+                      <Text style={{ color: COLORS.text, fontSize: 16, fontWeight: '700' }}>
+                        Monthly
+                      </Text>
+                    </View>
                     <Text style={{ color: COLORS.textSecondary, fontSize: 13 }}>
-                      Cancel anytime
+                      {isSubscribed ? 'Cancel anytime' : 'Elite Pro required'}
                     </Text>
                   </View>
                   <View style={{ alignItems: 'flex-end', gap: 8 }}>
@@ -259,14 +276,18 @@ export default function CommunityDetailScreen() {
                     </Text>
                     <AnimatedPressable onPress={handleJoinMonthly} disabled={joiningMonthly}>
                       <View style={{
-                        backgroundColor: COLORS.primary,
+                        backgroundColor: isSubscribed ? COLORS.primary : '#7C3AED',
                         borderRadius: 10,
                         paddingHorizontal: 20,
                         paddingVertical: 8,
                         opacity: joiningMonthly ? 0.7 : 1,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 5,
                       }}>
+                        {!isSubscribed && <Lock size={12} color="#fff" />}
                         <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>
-                          {joiningMonthly ? 'Joining...' : 'Join'}
+                          {joiningMonthly ? 'Joining...' : isSubscribed ? 'Join' : 'Upgrade'}
                         </Text>
                       </View>
                     </AnimatedPressable>
@@ -279,17 +300,20 @@ export default function CommunityDetailScreen() {
                   borderRadius: 14,
                   padding: 16,
                   borderWidth: 1,
-                  borderColor: COLORS.border,
+                  borderColor: isSubscribed ? COLORS.border : '#7C3AED60',
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                 }}>
                   <View>
-                    <Text style={{ color: COLORS.text, fontSize: 16, fontWeight: '700', marginBottom: 2 }}>
-                      Lifetime access
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      {!isSubscribed && <Lock size={14} color={COLORS.textSecondary} />}
+                      <Text style={{ color: COLORS.text, fontSize: 16, fontWeight: '700' }}>
+                        Lifetime access
+                      </Text>
+                    </View>
                     <Text style={{ color: COLORS.textSecondary, fontSize: 13 }}>
-                      One-time payment
+                      {isSubscribed ? 'One-time payment' : 'Elite Pro required'}
                     </Text>
                   </View>
                   <View style={{ alignItems: 'flex-end', gap: 8 }}>
@@ -298,16 +322,20 @@ export default function CommunityDetailScreen() {
                     </Text>
                     <AnimatedPressable onPress={handleJoinOneTime} disabled={joiningOneTime}>
                       <View style={{
-                        backgroundColor: COLORS.surfaceSecondary,
+                        backgroundColor: isSubscribed ? COLORS.surfaceSecondary : '#7C3AED20',
                         borderRadius: 10,
                         paddingHorizontal: 20,
                         paddingVertical: 8,
                         borderWidth: 1,
-                        borderColor: COLORS.border,
+                        borderColor: isSubscribed ? COLORS.border : '#7C3AED60',
                         opacity: joiningOneTime ? 0.7 : 1,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 5,
                       }}>
-                        <Text style={{ color: COLORS.text, fontSize: 14, fontWeight: '700' }}>
-                          {joiningOneTime ? 'Joining...' : 'Buy'}
+                        {!isSubscribed && <Lock size={12} color={COLORS.primary} />}
+                        <Text style={{ color: isSubscribed ? COLORS.text : COLORS.primary, fontSize: 14, fontWeight: '700' }}>
+                          {joiningOneTime ? 'Joining...' : isSubscribed ? 'Buy' : 'Upgrade'}
                         </Text>
                       </View>
                     </AnimatedPressable>

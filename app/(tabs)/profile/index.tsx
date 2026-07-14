@@ -15,6 +15,7 @@ import { Community } from '@/types';
 import { MOCK_COMMUNITIES, MOCK_PROFILE, formatCount } from '@/utils/mockData';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 const PRIVACY_POLICY_URL = 'https://eliteconnect.app/privacy';
 const TERMS_URL = 'https://eliteconnect.app/terms';
@@ -70,6 +71,7 @@ function CommunityRow({ community }: { community: Community }) {
 
 export default function ProfileScreen() {
   const { user, loading: authLoading, signOut, deleteAccount } = useAuth();
+  const { isSubscribed } = useSubscription();
   const router = useRouter();
   const [joinedCommunities] = useState<Community[]>(MOCK_COMMUNITIES.slice(0, 2));
   const [myCommunities] = useState<Community[]>([]);
@@ -396,6 +398,58 @@ export default function ProfileScreen() {
             </View>
           )}
         </View>
+
+        {/* Go Premium banner — only for non-subscribers */}
+        {!isSubscribed && (
+          <AnimatedPressable onPress={() => {
+            console.log('[Profile] Go Premium button pressed');
+            router.push('/paywall');
+          }}>
+            <View style={{
+              borderRadius: 16,
+              overflow: 'hidden',
+              marginBottom: 24,
+              borderWidth: 1,
+              borderColor: '#7C3AED60',
+            }}>
+              <View style={{
+                backgroundColor: '#7C3AED',
+                paddingVertical: 16,
+                paddingHorizontal: 20,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 14,
+              }}>
+                <View style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Text style={{ fontSize: 22 }}>👑</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800', marginBottom: 2 }}>
+                    Go Elite Premium
+                  </Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13 }}>
+                    Join premium communities & unlock exclusive content
+                  </Text>
+                </View>
+                <View style={{
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                }}>
+                  <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Upgrade</Text>
+                </View>
+              </View>
+            </View>
+          </AnimatedPressable>
+        )}
 
         {/* Settings */}
         <View style={{

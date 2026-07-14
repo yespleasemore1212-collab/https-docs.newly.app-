@@ -4,6 +4,7 @@ import { usePathname } from 'expo-router';
 import { Stack } from 'expo-router';
 import FloatingTabBar from '@/components/FloatingTabBar';
 import { COLORS } from '@/constants/Colors';
+import { useSubscriptionGuard } from "@/hooks/useSubscriptionGuard";
 
 const TABS = [
   {
@@ -33,6 +34,8 @@ const TABS = [
 ];
 
 export default function TabLayout() {
+  useSubscriptionGuard();
+
   const pathname = usePathname();
 
   // Hide tab bar on certain screens
