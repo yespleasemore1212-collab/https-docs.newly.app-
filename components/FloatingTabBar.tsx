@@ -163,47 +163,90 @@ export default function FloatingTabBar({
           marginBottom: bottomMargin ?? 20
         }
       ]}>
-        <BlurView
-          intensity={80}
-          style={[dynamicStyles.blurContainer, { borderRadius }]}
-        >
-          <View style={dynamicStyles.background} />
-          <Animated.View style={[dynamicStyles.indicator, indicatorStyle]} />
-          <View style={styles.tabsContainer}>
-            {tabs.map((tab, index) => {
-              const isActive = activeTabIndex === index;
-
-              return (
-                <React.Fragment key={index}>
-                <TouchableOpacity
-                  key={index} // Use index as key
-                  style={styles.tab}
-                  onPress={() => handleTabPress(tab.route)}
-                  activeOpacity={0.7}
-                >
-                  <View key={index} style={styles.tabContent}>
-                    <IconSymbol
-                      android_material_icon_name={tab.icon}
-                      ios_icon_name={tab.icon}
-                      size={24}
-                      color={isActive ? theme.colors.primary : (theme.dark ? '#98989D' : '#000000')}
-                    />
-                    <Text
-                      style={[
-                        styles.tabLabel,
-                        { color: theme.dark ? '#98989D' : '#8E8E93' },
-                        isActive && { color: theme.colors.primary, fontWeight: '600' },
-                      ]}
+        {Platform.OS === 'ios' ? (
+          <BlurView
+            intensity={80}
+            style={[dynamicStyles.blurContainer, { borderRadius }]}
+          >
+            <View style={dynamicStyles.background} />
+            <Animated.View style={[dynamicStyles.indicator, indicatorStyle]} />
+            <View style={styles.tabsContainer}>
+              {tabs.map((tab, index) => {
+                const isActive = activeTabIndex === index;
+                return (
+                  <React.Fragment key={index}>
+                    <TouchableOpacity
+                      style={styles.tab}
+                      onPress={() => {
+                        console.log('[FloatingTabBar] Tab pressed:', tab.label, 'route:', tab.route);
+                        handleTabPress(tab.route);
+                      }}
+                      activeOpacity={0.7}
                     >
-                      {tab.label}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-                </React.Fragment>
-              );
-            })}
+                      <View style={styles.tabContent}>
+                        <IconSymbol
+                          android_material_icon_name={tab.icon}
+                          ios_icon_name={tab.icon}
+                          size={24}
+                          color={isActive ? theme.colors.primary : (theme.dark ? '#98989D' : '#000000')}
+                        />
+                        <Text
+                          style={[
+                            styles.tabLabel,
+                            { color: theme.dark ? '#98989D' : '#8E8E93' },
+                            isActive && { color: theme.colors.primary, fontWeight: '600' },
+                          ]}
+                        >
+                          {tab.label}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  </React.Fragment>
+                );
+              })}
+            </View>
+          </BlurView>
+        ) : (
+          <View style={[dynamicStyles.blurContainer, { borderRadius }]}>
+            <View style={dynamicStyles.background} />
+            <Animated.View style={[dynamicStyles.indicator, indicatorStyle]} />
+            <View style={styles.tabsContainer}>
+              {tabs.map((tab, index) => {
+                const isActive = activeTabIndex === index;
+                return (
+                  <React.Fragment key={index}>
+                    <TouchableOpacity
+                      style={styles.tab}
+                      onPress={() => {
+                        console.log('[FloatingTabBar] Tab pressed:', tab.label, 'route:', tab.route);
+                        handleTabPress(tab.route);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.tabContent}>
+                        <IconSymbol
+                          android_material_icon_name={tab.icon}
+                          ios_icon_name={tab.icon}
+                          size={24}
+                          color={isActive ? theme.colors.primary : (theme.dark ? '#98989D' : '#000000')}
+                        />
+                        <Text
+                          style={[
+                            styles.tabLabel,
+                            { color: theme.dark ? '#98989D' : '#8E8E93' },
+                            isActive && { color: theme.colors.primary, fontWeight: '600' },
+                          ]}
+                        >
+                          {tab.label}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  </React.Fragment>
+                );
+              })}
+            </View>
           </View>
-        </BlurView>
+        )}
       </View>
     </SafeAreaView>
   );
